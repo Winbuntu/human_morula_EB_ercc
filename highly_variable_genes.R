@@ -9,7 +9,8 @@ library( statmod )
 #RC.clean.clean.gene.DESeqN.morula 
 
 RC.clean.clean.ERCC.DESeqN.Morula = 
-  RC.clean.clean.ERCC.DESeqN[,match(colnames(RC.clean.clean.gene.DESeqN.morula),colnames(RC.clean.clean.ERCC.DESeqN))]
+  RC.clean.clean.ERCC.DESeqN[,match(colnames(RC.clean.clean.gene.DESeqN.morula),
+                                    colnames(RC.clean.clean.ERCC.DESeqN))]
 
 meansHeLa <- rowMeans( RC.clean.clean.ERCC.DESeqN.Morula )
 varsHeLa <- rowVars( RC.clean.clean.ERCC.DESeqN.Morula )
@@ -19,15 +20,16 @@ cv2HeLa <- varsHeLa / meansHeLa^2
 minMeanForFit <- unname( quantile( meansHeLa[ which( cv2HeLa > .3 ) ], .95 ) )
 minMeanForFit
 
-useForFit <- meansHeLa >= minMeanForFit
+useForFit <- (meansHeLa >= minMeanForFit)
+
 fit <- glmgam.fit( cbind( a0 = 1, a1tilde = 1/meansHeLa[useForFit] ),
                    cv2HeLa[useForFit] )
 fit$coefficients
 
-
+### 这里有错
 sfHeLa = 
-  colData(dds.Gene)$sizeFactor[
-    match(colnames(RC.clean.clean.gene.DESeqN.morula),names(colData(dds.Gene)$sizeFactor))]
+  colData(dds.ERCC)$sizeFactor[
+    match(colnames(RC.clean.clean.gene.DESeqN.morula),names(colData(dds.ERCC)$sizeFactor))]
 
 xi <- mean( 1 / sfHeLa )
 
@@ -38,6 +40,7 @@ a1 <- unname( fit$coefficients["a1tilde"] - xi )
 
 c( a0, a1 )
 
+####
 
 plot( NULL, xaxt="n", yaxt="n",
       log="xy", xlim = c( 1e-1, 3e5 ), ylim = c( .005, 8 ),
@@ -52,7 +55,10 @@ points( meansHeLa, cv2HeLa, pch=20, cex=1, col="blue" )
 xg <- 10^seq( -2, 6, length.out=1000 )
 lines( xg, (xi+a1)/xg + a0, col="#FF000080", lwd=3 )
       # Plot quantile lines around the fit
-      df <- ncol(countsAt) - 1
+
+
+######
+df <- ncol(RC.clean.clean.gene.DESeqN.morula) - 1  # 
 lines( xg, ( (xi+a1)/xg + a0  ) * qchisq( .975, df ) / df,
              col="#FF000080", lwd=2, lty="dashed" )
 lines( xg, ( (xi+a1)/xg + a0  ) * qchisq( .025, df ) / df,
@@ -152,6 +158,9 @@ lines( xg, ( (xi+a1)/xg + a0  ) * qchisq( .025, df ) / df,
 # sig[is.na(sig)] <- FALSE
 # table( sig )
 
+
+
+
 ##############################################
 # perform actural test
 
@@ -180,22 +189,21 @@ table( sig )
 
 plot( NULL, xaxt="n", yaxt="n",
       log="xy", xlim = c( 1e-1, 3e5 ), ylim = c( .005, 8 ),
-      xlab = "average normalized read count", ylab = "squared coefficient of variation (CV^2)")
-      axis( 1, 10^(-1:5), c( "0.1", "1", "10", "100", "1000",
+xlab = "average normalized read count", ylab = "squared coefficient of variation (CV^2)")
+axis( 1, 10^(-1:5), c( "0.1", "1", "10", "100", "1000",
                              expression(10^4), expression(10^5) ) )
-      axis( 2, 10^(-2:1), c( "0.01", "0.1", "1", "10" ), las=2 )
-      abline( h=10^(-2:1), v=10^(-1:5), col="#D0D0D0", lwd=2 )
+axis( 2, 10^(-2:1), c( "0.01", "0.1", "1", "10" ), las=2 )
+abline( h=10^(-2:1), v=10^(-1:5), col="#D0D0D0", lwd=2 )
       # Plot the plant genes, use a different color if they are highly variable
-      points( meansAt, cv2At, pch=20, cex=.2,
+points( meansAt, cv2At, pch=20, cex=.2,
               col = ifelse( padj < .1, "#C0007090", colAt ) )
       # Add the technical noise fit, as before
-      xg <- 10^seq( -2, 6, length.out=1000 )
-      lines( xg, (xi+a1)/xg + a0, col="#FF000080", lwd=3 )
+xg <- 10^seq( -2, 6, length.out=1000 )
+lines( xg, (xi+a1)/xg + a0, col="#FF000080", lwd=3 )
       # Add a curve showing the expectation for the chosen biological CV^2 thershold
-      lines( xg, psia1theta/xg + a0 + minBiolDisp, lty="dashed", col="#C0007090", lwd=3 )
+lines( xg, psia1theta/xg + a0 + minBiolDisp, lty="dashed", col="#C0007090", lwd=3 )
 
 ########
       
 sig.gene = names(sig)[sig]
 write.table(sig.gene,file = "morula.high.variable.beforeCorrectEmbryoEffect.txt",quote = F,row.names = F)      
-      
