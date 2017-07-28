@@ -43,11 +43,11 @@ c( a0, a1 )
 ####
 
 plot( NULL, xaxt="n", yaxt="n",
-      log="xy", xlim = c( 1e-1, 3e5 ), ylim = c( .005, 8 ),
+      log="xy", xlim = c( 1e-1, 3e5 ), ylim = c( .0005, 100 ),
       xlab = "average normalized read count", ylab = "squared coefficient of variation (CV^2)")
 axis( 1, 10^(-1:5), c( "0.1", "1", "10", "100", "1000",
                              expression(10^4), expression(10^5) ) )
-axis( 2, 10^(-2:1), c( "0.01", "0.1", "1", "10" ), las=2 )
+axis( 2, 10^(-3:2), c("0.001", "0.01", "0.1", "1", "10","100" ), las=2 )
 abline( h=10^(-2:1), v=10^(-1:5), col="#D0D0D0", lwd=2 )
       # Add the data points
 points( meansHeLa, cv2HeLa, pch=20, cex=1, col="blue" )
@@ -188,11 +188,11 @@ table( sig )
 
 
 plot( NULL, xaxt="n", yaxt="n",
-      log="xy", xlim = c( 1e-1, 3e5 ), ylim = c( .005, 8 ),
+      log="xy", xlim = c( 1e-1, 3e5 ), ylim = c( .005, 100 ),
 xlab = "average normalized read count", ylab = "squared coefficient of variation (CV^2)")
 axis( 1, 10^(-1:5), c( "0.1", "1", "10", "100", "1000",
                              expression(10^4), expression(10^5) ) )
-axis( 2, 10^(-2:1), c( "0.01", "0.1", "1", "10" ), las=2 )
+axis( 2, 10^(-2:2), c( "0.01", "0.1", "1", "10","100" ), las=2 )
 abline( h=10^(-2:1), v=10^(-1:5), col="#D0D0D0", lwd=2 )
       # Plot the plant genes, use a different color if they are highly variable
 points( meansAt, cv2At, pch=20, cex=.2,
@@ -203,7 +203,13 @@ lines( xg, (xi+a1)/xg + a0, col="#FF000080", lwd=3 )
       # Add a curve showing the expectation for the chosen biological CV^2 thershold
 lines( xg, psia1theta/xg + a0 + minBiolDisp, lty="dashed", col="#C0007090", lwd=3 )
 
+abline(v = 1)
 ########
       
 sig.gene = names(sig)[sig]
 write.table(sig.gene,file = "morula.high.variable.beforeCorrectEmbryoEffect.txt",quote = F,row.names = F)      
+
+sig.big.gene = names(sig)[sig  & (rowMeans(RC.clean.clean.gene.DESeqN.morula) > 1)]
+write.table(sig.big.gene,file = "morula.high.variable.bigthan5Readcount.beforeCorrectEmbryoEffect.txt",quote = F,row.names = F)      
+
+
