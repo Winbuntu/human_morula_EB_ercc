@@ -57,7 +57,38 @@ heatmap( log2(as.matrix(Tang.RPKM.lateblast.Blakeley.tb3)+1),trace = "none",dens
          dendrogram = "both")
 
 
+#######################################
 
+# 用PCA，只画morula，看是不是能大致分成两类
+
+ggplot(GetPCA.Norm.data.noquantile.norm(RC.clean.clean.gene.DESeqN.morula)[[1]], 
+       aes(PC1,PC2,colour = factor(QC.clean.clean$embryo.number[QC.clean.clean$Stage=="M"]))) + 
+  geom_point(size=3) + theme_base() 
+
+
+#####
+
+# 从PC loading 看哪些基因导致分散
+
+require(FactoMineR)
+
+RC.clean.clean.gene.DESeqN.morula.filtered.for.PCA = 
+  RC.clean.clean.gene.DESeqN.morula[ apply(   RC.clean.clean.gene.DESeqN.morula  ,1, 
+                                              function(x) {sum(x>10) >= ( dim(RC.clean.clean.gene.DESeqN.morula)[2]  /10)   } ) ,]
+
+res.PCA.RC.clean.clean.gene.DESeqN.morula = PCA(t(  log2(  RC.clean.clean.gene.DESeqN.morula.filtered.for.PCA +1)  ),graph = F)
+
+
+PCs <- data.frame(PC1 = as.numeric(pca.res$ind$coord[,1]) ,
+                  PC2 = as.numeric(pca.res$ind$coord[,2]))
+
+
+pc.loading = 
+  res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[,1]^2 +  res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[,2]^2
+
+pc.loading.ordered = pc.loading[order(pc.loading,decreasing = T)]
+
+intersect(names(pc.loading.ordered)[1:1000],sig.big.gene)
 
 
 
