@@ -88,7 +88,16 @@ pc.loading =
 
 pc.loading.ordered = pc.loading[order(pc.loading,decreasing = T)]
 
-intersect(names(pc.loading.ordered)[1:1000],sig.big.gene)
+intersect(names(pc.loading.ordered)[1:1000],Blakeley.tb3$Gene)
 
+
+pp = match(names(pc.loading.ordered)[1:1000],names(res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[,1]))
+
+plot(res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[pp,1],res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[pp,2])
+
+TE.pos = na.omit(match(TE.1000$V1,names(res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[,1])))
+
+points(res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[TE.pos,1],
+       res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[TE.pos,2],col="red")
 
 
