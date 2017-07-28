@@ -26,3 +26,38 @@ heatmap( log2(as.matrix(RC.clean.clean.gene.DESeqN.EB.Blakeley.tb3)+1),trace = "
          breaks = palette.breaks,
          scale = c("row"),
          dendrogram = "both")
+
+## early blastocyst 分不了类
+
+
+
+
+
+
+##########################################
+
+# 试试 late blastocyst是不是可以分成三类，用堂复仇的数据
+
+Tang.RPKM = read.csv("tangfuchou数据/nsmb.2660-S2.csv")
+
+Tang.RPKM.lateblast = Tang.RPKM[,c(63:92)]
+
+
+Tang.RPKM.lateblast.Blakeley.tb3 = 
+  Tang.RPKM.lateblast[match(Blakeley.tb3$Gene,Tang.RPKM$Gene_ID),]
+
+
+heatmap( log2(as.matrix(Tang.RPKM.lateblast.Blakeley.tb3)+1),trace = "none",density = "none",
+         #Colv = as.dendrogram(complete.cluster),
+         #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
+         #ColSideColors =  c("grey","red")[factor(type)],
+         col=color.palette,
+         #breaks = palette.breaks,
+         scale = c("row"),
+         dendrogram = "both")
+
+
+
+
+
+
