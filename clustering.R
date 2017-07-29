@@ -121,16 +121,6 @@ points(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered[EPI.pos,1],
 
 ######
 
-EPI.pos = na.omit(match(EPI.1000$V1,rownames(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered)))
-
-EPI.pos[EPI.pos>1000] <- NA
-
-points(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered[EPI.pos,1],
-       res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered[EPI.pos,2],col="blue")
-
-
-######
-
 
 PE.pos = na.omit(match(PE.1000$V1,rownames(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered)))
 
