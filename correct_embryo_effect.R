@@ -17,4 +17,20 @@ RC.clean.clean.gene.DESeqN.morula.big.log = log2(RC.clean.clean.gene.DESeqN.moru
 
 RC.clean.clean.gene.DESeqN.morula.big.log.removed.Embryo.effect = apply(RC.clean.clean.gene.DESeqN.morula.big.log,1,fit.one.gene)
 
+RC.clean.clean.gene.DESeqN.morula.big.log.removed.Embryo.effect = t(RC.clean.clean.gene.DESeqN.morula.big.log.removed.Embryo.effect)
+
+RC.clean.clean.gene.DESeqN.morula.big.NOT.log.removed.Embryo.effect = 
+  2^RC.clean.clean.gene.DESeqN.morula.big.log.removed.Embryo.effect-1
+
 #RPKM.clean.clean.norm.Morula.remove.EMB.eff = 2^RPKM.clean.clean.norm.Morula.log.remove.EMB.eff
+
+ggplot(GetPCA.Norm.data.noquantile.norm(RC.clean.clean.gene.DESeqN.morula.big.NOT.log.removed.Embryo.effect)[[1]], 
+       aes(PC1,PC2,shape = morula.embryo.info,
+           colour = morula.embryo.info)) + 
+  geom_point(size=3) + theme_base() 
+
+
+ggplot(GetPCA.Norm.data.noquantile.norm(RC.clean.clean.gene.DESeqN.morula)[[1]], 
+       aes(PC1,PC2,shape = morula.embryo.info,
+           colour = morula.embryo.info)) + 
+  geom_point(size=3) + theme_base() 
