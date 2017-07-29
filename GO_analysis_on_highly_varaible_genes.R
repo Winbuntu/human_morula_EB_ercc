@@ -18,3 +18,5 @@ intersect(as.character(PE.1000$V1),sig.big.gene)
 ICM.TE.diff = read.table("ICM.TE.diff.gene.1000")
 intersect(as.character(ICM.TE.diff$V1),sig.big.gene)
 
+Maintained.lineage.markers = read.table("cell.matintained.3.lineage.markers")
+intersect(as.character(Maintained.lineage.markers$V1),sig.big.gene)

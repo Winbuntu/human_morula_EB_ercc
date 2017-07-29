@@ -68,7 +68,7 @@ ggplot(GetPCA.Norm.data.noquantile.norm(RC.clean.clean.gene.DESeqN.morula)[[1]],
 
 #####
 
-# 从PC loading 看哪些基因导致分散
+# 从PC loading 看哪些基因导致分散,画EPI，PE／TE 三个胚层的marker
 
 require(FactoMineR)
 
@@ -88,16 +88,60 @@ pc.loading =
 
 pc.loading.ordered = pc.loading[order(pc.loading,decreasing = T)]
 
+res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered = 
+  res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[order(pc.loading,decreasing = T),]
+
+length(Blakeley.tb3$Gene)
+
 intersect(names(pc.loading.ordered)[1:1000],Blakeley.tb3$Gene)
 
+intersect(rownames(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered)[1:1000],Blakeley.tb3$Gene)
 
-pp = match(names(pc.loading.ordered)[1:1000],names(res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[,1]))
+#pp = match(names(pc.loading.ordered)[1:1000],names(res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[,1]))
 
-plot(res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[pp,1],res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[pp,2])
+plot(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered[1:1000,1],
+     res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered[1:1000,2],pch="."  )
 
-TE.pos = na.omit(match(TE.1000$V1,names(res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[,1])))
+TE.pos = na.omit(match(TE.1000$V1,rownames(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered)))
 
-points(res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[TE.pos,1],
-       res.PCA.RC.clean.clean.gene.DESeqN.morula$var$coord[TE.pos,2],col="red")
+TE.pos[TE.pos>1000] <- NA
+
+points(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered[TE.pos,1],
+       res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered[TE.pos,2],col="red")
+
+#######
+
+EPI.pos = na.omit(match(EPI.1000$V1,rownames(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered)))
+
+EPI.pos[EPI.pos>1000] <- NA
+
+points(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered[EPI.pos,1],
+       res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered[EPI.pos,2],col="blue")
+
+
+######
+
+EPI.pos = na.omit(match(EPI.1000$V1,rownames(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered)))
+
+EPI.pos[EPI.pos>1000] <- NA
+
+points(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered[EPI.pos,1],
+       res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered[EPI.pos,2],col="blue")
+
+
+######
+
+
+PE.pos = na.omit(match(PE.1000$V1,rownames(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered)))
+
+PE.pos[PE.pos>1000] <- NA
+
+points(res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered[PE.pos,1],
+       res.PCA.RC.clean.clean.gene.DESeqN.morula.ordered[PE.pos,2],col="green")
+#####
+
+# 结论是PCA不能分开
+
+
 
 
