@@ -2,6 +2,11 @@ library(genefilter)
 library( statmod )
 
 
+
+
+# 用之前要重新运行，以免被覆盖
+
+
 ##########
 
 # Estimating technical noise

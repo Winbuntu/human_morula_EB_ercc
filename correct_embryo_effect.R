@@ -145,14 +145,215 @@ dev.off()
 
 
 
+#####################
+
+# 试着找出top variable gene，在embryo effect corrected的data里
+
+# 用之前要重新运行，以免被覆盖
+
+
+# RC.clean.clean.gene.DESeqN.morula.big.NOT.log.removed.Embryo.effect
+
+RC.morula.corrected = RC.clean.clean.gene.DESeqN.morula.big.NOT.log.removed.Embryo.effect
+
+
+##### 
+
+# technique noise
+
+
+RC.clean.clean.ERCC.DESeqN.Morula = 
+  RC.clean.clean.ERCC.DESeqN[,match(colnames(RC.clean.clean.gene.DESeqN.morula),
+                                    colnames(RC.clean.clean.ERCC.DESeqN))]
+
+meansHeLa <- rowMeans( RC.clean.clean.ERCC.DESeqN.Morula )
+varsHeLa <- rowVars( RC.clean.clean.ERCC.DESeqN.Morula )
+cv2HeLa <- varsHeLa / meansHeLa^2
+
+
+minMeanForFit <- unname( quantile( meansHeLa[ which( cv2HeLa > .3 ) ], .95 ) )
+minMeanForFit
+
+useForFit <- (meansHeLa >= minMeanForFit)
+
+fit <- glmgam.fit( cbind( a0 = 1, a1tilde = 1/meansHeLa[useForFit] ),
+                   cv2HeLa[useForFit] )
+fit$coefficients
+
+### 这里有错
+sfHeLa = 
+  colData(dds.ERCC)$sizeFactor[
+    match(colnames(RC.clean.clean.gene.DESeqN.morula),names(colData(dds.ERCC)$sizeFactor))]
+
+xi <- mean( 1 / sfHeLa )
+
+
+a0 <- unname( fit$coefficients["a0"] )
+a1 <- unname( fit$coefficients["a1tilde"] - xi )
+
+
+c( a0, a1 )
+
+####
+
+plot( NULL, xaxt="n", yaxt="n",
+      log="xy", xlim = c( 1e-1, 3e5 ), ylim = c( .0005, 100 ),
+      xlab = "average normalized read count", ylab = "squared coefficient of variation (CV^2)")
+axis( 1, 10^(-1:5), c( "0.1", "1", "10", "100", "1000",
+                       expression(10^4), expression(10^5) ) )
+axis( 2, 10^(-3:2), c("0.001", "0.01", "0.1", "1", "10","100" ), las=2 )
+abline( h=10^(-2:1), v=10^(-1:5), col="#D0D0D0", lwd=2 )
+# Add the data points
+points( meansHeLa, cv2HeLa, pch=20, cex=1, col="blue" )
+# Plot the fitted curve
+xg <- 10^seq( -2, 6, length.out=1000 )
+lines( xg, (xi+a1)/xg + a0, col="#FF000080", lwd=3 )
+# Plot quantile lines around the fit
+
+
+######
+df <- ncol(RC.clean.clean.gene.DESeqN.morula) - 1  # 
+lines( xg, ( (xi+a1)/xg + a0  ) * qchisq( .975, df ) / df,
+       col="#FF000080", lwd=2, lty="dashed" )
+lines( xg, ( (xi+a1)/xg + a0  ) * qchisq( .025, df ) / df,
+       col="#FF000080", lwd=2, lty="dashed" )
 
 
 
 
+##############################################
+# perform actural test
+
+meansAt <- rowMeans( RC.morula.corrected )
+varsAt <- rowVars( RC.morula.corrected )
+cv2At <- varsAt / meansAt^2
+
+sfAt = 
+  colData(dds.Gene)$sizeFactor[
+    match(colnames(RC.morula.corrected),names(colData(dds.Gene)$sizeFactor))]
+
+psia1theta <- mean( 1 / sfAt ) + a1 * mean( sfHeLa / sfAt )
+
+minBiolDisp <- .5^2
+
+m <- ncol(RC.morula.corrected)
+cv2th <- a0 + minBiolDisp + a0 * minBiolDisp
+testDenom <- ( meansAt * psia1theta + meansAt^2 * cv2th ) / ( 1 + cv2th/m )
+p <- 1 - pchisq( varsAt * (m-1) / testDenom, m-1 )
+
+padj <- p.adjust( p, "BH" )
+sig <- padj < .1
+sig[is.na(sig)] <- FALSE
+table( sig )
+
+
+plot( NULL, xaxt="n", yaxt="n",
+      log="xy", xlim = c( 1e-1, 3e5 ), ylim = c( .005, 100 ),
+      xlab = "average normalized read count", ylab = "squared coefficient of variation (CV^2)")
+axis( 1, 10^(-1:5), c( "0.1", "1", "10", "100", "1000",
+                       expression(10^4), expression(10^5) ) )
+axis( 2, 10^(-2:2), c( "0.01", "0.1", "1", "10","100" ), las=2 )
+abline( h=10^(-2:1), v=10^(-1:5), col="#D0D0D0", lwd=2 )
+# Plot the plant genes, use a different color if they are highly variable
+points( meansAt, cv2At, pch=20, cex=.2,
+        col = ifelse( padj < .1, "#C0007090", colAt ) )
+# Add the technical noise fit, as before
+xg <- 10^seq( -2, 6, length.out=1000 )
+lines( xg, (xi+a1)/xg + a0, col="#FF000080", lwd=3 )
+# Add a curve showing the expectation for the chosen biological CV^2 thershold
+lines( xg, psia1theta/xg + a0 + minBiolDisp, lty="dashed", col="#C0007090", lwd=3 )
+
+abline(v = 1)
+
+sig.gene.after.correction = names(sig)[sig]
+write.table(sig.gene.after.correction,file = "morula.high.variable.AFTERCorrectEmbryoEffect.txt",quote = F,row.names = F)      
+
+
+intersect(sig.gene.after.correction,Blakeley.tb3$Gene)
+
+intersect(sig.gene.after.correction,sig.big.gene)
+
+###########
+
+morula.gene.distance = cv2At - meansAt
+
+morula.gene.distance.big = morula.gene.distance[meansAt>10]
+
+morula.gene.distance.order = morula.gene.distance.big[order(morula.gene.distance.big,decreasing = T)]
+
+match(names(morula.gene.distance.order[1:1000]),names(meansAt))
+
+points( meansAt[match(names(morula.gene.distance.order[1:1000]),names(meansAt))], cv2At[match(names(morula.gene.distance.order[1:1000]),names(meansAt))], pch=20, cex=.2,
+        col = "black" )
+
+#morula.gene.distance.order[1:20]
+
+padj.order = padj[order(padj,decreasing = F)]
+
+RC.morula.corrected.top.variable = RC.morula.corrected[match(names(padj.order)[1:1000],rownames(RC.morula.corrected)),]
+
+RC.morula.corrected.big = RC.morula.corrected.top.variable[rowMeans(RC.morula.corrected.top.variable) > 10,]
 
 
 
+intersect(rownames(RC.morula.corrected.big),Blakeley.tb3$Gene)
+intersect(rownames(RC.morula.corrected.big),TE.1000$V1)
+
+palette.breaks <- seq(-2, 2, 0.1)
+color.palette = colorRampPalette(c("dodgerblue4","dodgerblue1","white","firebrick1","firebrick3"), 
+                                 space="Lab")(length(palette.breaks) - 1)
 
 
+png(file = "marula,highv gene after correcting for embryo effect, heatmap.jpeg",width = 1000,height = 800)
+heatmap( log2(as.matrix(RC.morula.corrected.big)+1),trace = "none",density = "none",
+         #Colv = as.dendrogram(complete.cluster),
+         #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
+         #ColSideColors =  c("grey","red")[factor(type)],
+         col=color.palette,
+         breaks = palette.breaks,
+         scale = c("row"),
+         dendrogram = "both")
+dev.off()
+
+############################
+
+
+plot( NULL, xaxt="n", yaxt="n",
+      log="xy", xlim = c( 1e-1, 3e5 ), ylim = c( .005, 100 ),
+      xlab = "average normalized read count", ylab = "squared coefficient of variation (CV^2)")
+axis( 1, 10^(-1:5), c( "0.1", "1", "10", "100", "1000",
+                       expression(10^4), expression(10^5) ) )
+axis( 2, 10^(-2:2), c( "0.01", "0.1", "1", "10","100" ), las=2 )
+abline( h=10^(-2:1), v=10^(-1:5), col="#D0D0D0", lwd=2 )
+# Plot the plant genes, use a different color if they are highly variable
+points( meansAt, cv2At, pch=20, cex=.2,
+        col = ifelse( padj < .1, "#C0007090", colAt ) )
+# Add the technical noise fit, as before
+xg <- 10^seq( -2, 6, length.out=1000 )
+lines( xg, (xi+a1)/xg + a0, col="#FF000080", lwd=3 )
+# Add a curve showing the expectation for the chosen biological CV^2 thershold
+lines( xg, psia1theta/xg + a0 + minBiolDisp, lty="dashed", col="#C0007090", lwd=3 )
+
+abline(v = 1)
+
+points( meansAt[match(rownames(RC.morula.corrected.top.variable),names(meansAt))],
+        cv2At[match(rownames(RC.morula.corrected.top.variable),names(meansAt))], pch=20, cex=.2,
+        col = "black" )
+
+
+###############################
+
+#RC.morula.corrected.top.variable
+
+png(file = "marula,highv gene after correcting for embryo effect, heatmap, including genes >1 count.jpeg",width = 1000,height = 800)
+heatmap( log2(as.matrix(RC.morula.corrected.top.variable)+1),trace = "none",density = "none",
+         #Colv = as.dendrogram(complete.cluster),
+         #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
+         #ColSideColors =  c("grey","red")[factor(type)],
+         col=color.palette,
+         breaks = palette.breaks,
+         scale = c("row"),
+         dendrogram = "both")
+dev.off()
 
 
