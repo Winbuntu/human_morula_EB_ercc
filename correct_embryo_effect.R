@@ -370,9 +370,59 @@ rect.hclust(complete.cluster,3)
 
 
 plot.exp = data.frame(exp = RC.morula.corrected.top.variable[which(rownames(RC.morula.corrected.top.variable) 
-                                                                   == "TGFBR3"),],
+                                                                   == "IFITM1"),],
                       group = cutree(complete.cluster,3))
 
 ggplot(plot.exp, aes(x = factor(group), y = log2(exp+1) )) +
   geom_boxplot() + geom_jitter()
+
+
+###############
+
+# 看整体的gene，在三组中如何分布
+
+plot.exp = data.frame(exp = RC.morula.corrected.top.variable[which(rownames(RC.morula.corrected.top.variable) 
+                                                                   == "CCNE2"),],
+                      group = cutree(complete.cluster,3))
+
+
+
+#############
+
+
+#library(reshape2)
+#melt(x, id.vars=c('id', 'time'),var='color')
+
+RC.morula.corrected.TE = RC.morula.corrected[match(EPI.1000$V1,rownames(RC.morula.corrected.top.variable)),]
+
+#RC.morula.corrected.TE = RC.morula.corrected.top.variable
+
+RC.morula.corrected.TE = t( scale(t(RC.morula.corrected.TE))  )
+
+dat2a <- data.frame(stack(RC.morula.corrected.TE))
+colnames(dat2a) = c("gene","sample","sample.2","exp")
+
+dat2a$cluster = rep(cutree(complete.cluster,3),each = dim(RC.morula.corrected.TE)[1])
+
+ggplot(dat2a, aes(x = factor(cluster), y = log2(exp+1) )) +
+  geom_boxplot()# + geom_jitter()
+
+
+##
+
+
+RC.morula.corrected.TE = RC.morula.corrected[match(PE.1000$V1,rownames(RC.morula.corrected)),]
+
+dat2a <- data.frame(stack(RC.morula.corrected.TE))
+colnames(dat2a) = c("gene","sample","sample.2","exp")
+
+dat2a$cluster = rep(cutree(complete.cluster,3),each = dim(RC.morula.corrected.TE)[1])
+
+ggplot(dat2a, aes(x = factor(cluster), y = log2(exp+1) )) +
+  geom_boxplot()# + geom_jitter()
+
+
+
+
+
 
