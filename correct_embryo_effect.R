@@ -356,4 +356,23 @@ heatmap( log2(as.matrix(RC.morula.corrected.top.variable)+1),trace = "none",dens
          dendrogram = "both")
 dev.off()
 
+################################
+
+# 试一试cut tree，不同组细胞表达marker是不是有差别
+
+#plot(hclust(RC.morula.corrected.top.variable))
+complete.cluster = hclust(as.dist(1-abs(cor(log2(RC.morula.corrected.top.variable+1),method="spearman"))), 
+                          method="complete")
+plot(complete.cluster, hang = -1)
+
+#reconcilePropertiesAndPrototype
+rect.hclust(complete.cluster,3)
+
+
+plot.exp = data.frame(exp = RC.morula.corrected.top.variable[which(rownames(RC.morula.corrected.top.variable) 
+                                                                   == "BTBD10"),],
+                      group = cutree(complete.cluster,3))
+
+ggplot(plot.exp, aes(x = factor(group), y = log2(exp+1) )) +
+  geom_boxplot()
 
