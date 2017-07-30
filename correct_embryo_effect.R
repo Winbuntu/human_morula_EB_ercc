@@ -370,9 +370,9 @@ rect.hclust(complete.cluster,3)
 
 
 plot.exp = data.frame(exp = RC.morula.corrected.top.variable[which(rownames(RC.morula.corrected.top.variable) 
-                                                                   == "BTBD10"),],
+                                                                   == "TGFBR3"),],
                       group = cutree(complete.cluster,3))
 
 ggplot(plot.exp, aes(x = factor(group), y = log2(exp+1) )) +
-  geom_boxplot()
+  geom_boxplot() + geom_jitter()
 
