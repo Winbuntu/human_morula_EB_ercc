@@ -20,3 +20,12 @@ intersect(as.character(ICM.TE.diff$V1),sig.big.gene)
 
 Maintained.lineage.markers = read.table("cell.matintained.3.lineage.markers")
 intersect(as.character(Maintained.lineage.markers$V1),sig.big.gene)
+
+
+TEAD4.target = read.table("TEAD4_target.gene.txt")
+TEAD4.target$V1 = toupper(TEAD4.target$V1)
+
+intersect(TEAD4.target$V1,sig.gene.after.correction)
+
+intersect(TEAD4.target$V1,sig.big.gene)
+

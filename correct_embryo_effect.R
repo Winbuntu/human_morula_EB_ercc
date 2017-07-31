@@ -386,6 +386,12 @@ plot.exp = data.frame(exp = RC.morula.corrected.top.variable[which(rownames(RC.m
                       group = cutree(complete.cluster,3))
 
 
+plot.exp = data.frame(exp = RC.morula.corrected[which(rownames(RC.morula.corrected) 
+                                                                   == "POU5F1"),],
+                      group = cutree(complete.cluster,3))
+
+ggplot(plot.exp, aes(x = factor(group), y = log2(exp+1) )) +
+  geom_boxplot() + geom_jitter()
 
 #############
 
@@ -393,7 +399,8 @@ plot.exp = data.frame(exp = RC.morula.corrected.top.variable[which(rownames(RC.m
 #library(reshape2)
 #melt(x, id.vars=c('id', 'time'),var='color')
 
-RC.morula.corrected.TE = RC.morula.corrected[match(EPI.1000$V1,rownames(RC.morula.corrected.top.variable)),]
+RC.morula.corrected.TE = RC.morula.corrected[match(sig.gene.after.correction,
+                                                   rownames(RC.morula.corrected)),]
 
 #RC.morula.corrected.TE = RC.morula.corrected.top.variable
 
