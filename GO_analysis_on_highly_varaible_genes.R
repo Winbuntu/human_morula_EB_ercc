@@ -29,3 +29,11 @@ intersect(TEAD4.target$V1,sig.gene.after.correction)
 
 intersect(TEAD4.target$V1,sig.big.gene)
 
+####################################
+
+
+phyper(length(intersect(as.character(PE.1000$V1),sig.big.gene)),
+       length(sig.big.gene), dim(RC.clean.clean.gene.DESeqN.morula.big)[1]-length(sig.big.gene),
+       length(as.character(PE.1000$V1)), lower.tail=TRUE);
+#dim(RC.clean.clean.gene.DESeqN.morula.big)[1]
+# (success-in-sample, success-in-bkgd, failure-in-bkgd, sample-size).
