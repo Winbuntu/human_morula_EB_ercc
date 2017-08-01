@@ -8,12 +8,30 @@ dim(RC.clean.clean.gene.DESeqN.EB)
 RC.clean.clean.gene.DESeqN.EB.big = 
   RC.clean.clean.gene.DESeqN.EB[rowMeans(RC.clean.clean.gene.DESeqN.EB) > 1,]
 
+
+###########################################
+
+RC.clean.clean.gene.DESeqN.EB.maintained.marker = 
+  RC.clean.clean.gene.DESeqN.EB[na.omit(match(Maintained.lineage.markers$V1,rownames(RC.clean.clean.gene.DESeqN.EB))),]
+
+heatmap( log2(as.matrix(RC.clean.clean.gene.DESeqN.EB.maintained.marker)+1),trace = "none",density = "none",
+         #Colv = as.dendrogram(complete.cluster),
+         #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
+         #ColSideColors =  c("grey","red")[factor(type)],
+         col=color.palette,
+         breaks = palette.breaks,
+         scale = c("row"),
+         dendrogram = "both")
+
+
+
+
 library(lme4) 
 
 EB.embryo.info = factor(QC.clean.clean$embryo.number[QC.clean.clean$Stage=="E"])
 
 fit.one.gene.EB <- function(x){
-  b = lmer( x - mean(x) ~  0 + (1|factor(EB.embryo.info) ) )
+  b = lmer( x - mean(x) ~   (1|factor(EB.embryo.info) ) )
   return(x - fitted(b))
 }
 
@@ -46,14 +64,28 @@ ggplot(GetPCA.Norm.data.noquantile.norm(RC.clean.clean.gene.DESeqN.EB)[[1]],
   geom_point(size=3) + theme_base() 
 
 
+##########################################################
+
+# 使用maintained marker无法聚类
+
+RC.clean.clean.gene.DESeqN.EB.big.NOT.log.removed.Embryo.effect.maintained.marker = 
+  RC.clean.clean.gene.DESeqN.EB.big.NOT.log.removed.Embryo.effect[na.omit(match(Maintained.lineage.markers$V1,
+                                                                                rownames(RC.clean.clean.gene.DESeqN.EB.big.NOT.log.removed.Embryo.effect))),]
+
+heatmap( log2(as.matrix(RC.clean.clean.gene.DESeqN.EB.big.NOT.log.removed.Embryo.effect.maintained.marker)+1),trace = "none",density = "none",
+         #Colv = as.dendrogram(complete.cluster),
+         #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
+         #ColSideColors =  c("grey","red")[factor(type)],
+         col=color.palette,
+         breaks = palette.breaks,
+         scale = c("row"),
+         dendrogram = "both")
+
+
+
 #################################
 
 # look for highly variable gene
-
-
-
-
-
 
 
 

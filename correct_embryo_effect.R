@@ -28,9 +28,11 @@ fit.one.gene <- function(x){
 
 RC.clean.clean.gene.DESeqN.morula.big.log = log2(RC.clean.clean.gene.DESeqN.morula.big+1)
 
-RC.clean.clean.gene.DESeqN.morula.big.log.removed.Embryo.effect = apply(RC.clean.clean.gene.DESeqN.morula.big.log,1,fit.one.gene)
+RC.clean.clean.gene.DESeqN.morula.big.log.removed.Embryo.effect = 
+  apply(RC.clean.clean.gene.DESeqN.morula.big.log,1,fit.one.gene)
 
-RC.clean.clean.gene.DESeqN.morula.big.log.removed.Embryo.effect = t(RC.clean.clean.gene.DESeqN.morula.big.log.removed.Embryo.effect)
+RC.clean.clean.gene.DESeqN.morula.big.log.removed.Embryo.effect = 
+  t(RC.clean.clean.gene.DESeqN.morula.big.log.removed.Embryo.effect)
 
 RC.clean.clean.gene.DESeqN.morula.big.NOT.log.removed.Embryo.effect = 
   2^RC.clean.clean.gene.DESeqN.morula.big.log.removed.Embryo.effect-1
@@ -50,7 +52,7 @@ ggplot(GetPCA.Norm.data.noquantile.norm(RC.clean.clean.gene.DESeqN.morula)[[1]],
 
 ##############################################
 
-RC.clean.clean.gene.DESeqN.morula.big.NOT.log.removed.Embryo.effect
+#RC.clean.clean.gene.DESeqN.morula.big.NOT.log.removed.Embryo.effect
 
 require(FactoMineR)
 
@@ -234,11 +236,232 @@ lines( xg, ( (xi+a1)/xg + a0  ) * qchisq( .025, df ) / df,
 
 
 
-##############################################
-# perform actural test
+# ##############################################
+# # perform actural test
+# 
+# meansAt <- rowMeans( RC.morula.corrected )
+# varsAt <- rowVars( RC.morula.corrected )
+# cv2At <- varsAt / meansAt^2
+# 
+# sfAt = 
+#   colData(dds.Gene)$sizeFactor[
+#     match(colnames(RC.morula.corrected),names(colData(dds.Gene)$sizeFactor))]
+# 
+# psia1theta <- mean( 1 / sfAt ) + a1 * mean( sfHeLa / sfAt )
+# 
+# minBiolDisp <- .5^2
+# 
+# m <- ncol(RC.morula.corrected)
+# cv2th <- a0 + minBiolDisp + a0 * minBiolDisp
+# testDenom <- ( meansAt * psia1theta + meansAt^2 * cv2th ) / ( 1 + cv2th/m )
+# p <- 1 - pchisq( varsAt * (m-1) / testDenom, m-1 )
+# 
+# padj <- p.adjust( p, "BH" )
+# sig <- padj < .1
+# sig[is.na(sig)] <- FALSE
+# table( sig )
+# 
+# 
+# plot( NULL, xaxt="n", yaxt="n",
+#       log="xy", xlim = c( 1e-1, 3e5 ), ylim = c( .005, 100 ),
+#       xlab = "average normalized read count", ylab = "squared coefficient of variation (CV^2)")
+# axis( 1, 10^(-1:5), c( "0.1", "1", "10", "100", "1000",
+#                        expression(10^4), expression(10^5) ) )
+# axis( 2, 10^(-2:2), c( "0.01", "0.1", "1", "10","100" ), las=2 )
+# abline( h=10^(-2:1), v=10^(-1:5), col="#D0D0D0", lwd=2 )
+# # Plot the plant genes, use a different color if they are highly variable
+# points( meansAt, cv2At, pch=20, cex=.2,
+#         col = ifelse( padj < .1, "#C0007090", colAt ) )
+# # Add the technical noise fit, as before
+# xg <- 10^seq( -2, 6, length.out=1000 )
+# lines( xg, (xi+a1)/xg + a0, col="#FF000080", lwd=3 )
+# # Add a curve showing the expectation for the chosen biological CV^2 thershold
+# lines( xg, psia1theta/xg + a0 + minBiolDisp, lty="dashed", col="#C0007090", lwd=3 )
+# 
+# abline(v = 1)
+# 
+# sig.gene.after.correction = names(sig)[sig]
+# write.table(sig.gene.after.correction,file = "morula.high.variable.AFTERCorrectEmbryoEffect.txt",quote = F,row.names = F)      
+# 
+# 
+# intersect(sig.gene.after.correction,Blakeley.tb3$Gene)
+# 
+# intersect(sig.gene.after.correction,sig.big.gene)
+# 
+# ###########
+# 
+# morula.gene.distance = cv2At - meansAt
+# 
+# morula.gene.distance.big = morula.gene.distance[meansAt>10]
+# 
+# morula.gene.distance.order = morula.gene.distance.big[order(morula.gene.distance.big,decreasing = T)]
+# 
+# match(names(morula.gene.distance.order[1:1000]),names(meansAt))
+# 
+# points( meansAt[match(names(morula.gene.distance.order[1:1000]),names(meansAt))], cv2At[match(names(morula.gene.distance.order[1:1000]),names(meansAt))], pch=20, cex=.2,
+#         col = "black" )
+# 
+# #morula.gene.distance.order[1:20]
+# 
+# padj.order = padj[order(padj,decreasing = F)]
+# 
+# RC.morula.corrected.top.variable = RC.morula.corrected[match(names(padj.order)[1:1000],rownames(RC.morula.corrected)),]
+# 
+# RC.morula.corrected.big = RC.morula.corrected.top.variable[rowMeans(RC.morula.corrected.top.variable) > 10,]
+# 
+# 
+# 
+# intersect(rownames(RC.morula.corrected.big),Blakeley.tb3$Gene)
+# intersect(rownames(RC.morula.corrected.big),TE.1000$V1)
+# 
+# palette.breaks <- seq(-2, 2, 0.1)
+# color.palette = colorRampPalette(c("dodgerblue4","dodgerblue1","white","firebrick1","firebrick3"), 
+#                                  space="Lab")(length(palette.breaks) - 1)
+# 
+# 
+# png(file = "marula,highv gene after correcting for embryo effect, heatmap.jpeg",width = 1000,height = 800)
+# heatmap( log2(as.matrix(RC.morula.corrected.big)+1),trace = "none",density = "none",
+#          #Colv = as.dendrogram(complete.cluster),
+#          #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
+#          #ColSideColors =  c("grey","red")[factor(type)],
+#          col=color.palette,
+#          breaks = palette.breaks,
+#          scale = c("row"),
+#          dendrogram = "both")
+# dev.off()
+# 
+# ############################
+# 
+# 
+# plot( NULL, xaxt="n", yaxt="n",
+#       log="xy", xlim = c( 1e-1, 3e5 ), ylim = c( .005, 100 ),
+#       xlab = "average normalized read count", ylab = "squared coefficient of variation (CV^2)")
+# axis( 1, 10^(-1:5), c( "0.1", "1", "10", "100", "1000",
+#                        expression(10^4), expression(10^5) ) )
+# axis( 2, 10^(-2:2), c( "0.01", "0.1", "1", "10","100" ), las=2 )
+# abline( h=10^(-2:1), v=10^(-1:5), col="#D0D0D0", lwd=2 )
+# # Plot the plant genes, use a different color if they are highly variable
+# points( meansAt, cv2At, pch=20, cex=.2,
+#         col = ifelse( padj < .1, "#C0007090", colAt ) )
+# # Add the technical noise fit, as before
+# xg <- 10^seq( -2, 6, length.out=1000 )
+# lines( xg, (xi+a1)/xg + a0, col="#FF000080", lwd=3 )
+# # Add a curve showing the expectation for the chosen biological CV^2 thershold
+# lines( xg, psia1theta/xg + a0 + minBiolDisp, lty="dashed", col="#C0007090", lwd=3 )
+# 
+# abline(v = 1)
+# 
+# points( meansAt[match(rownames(RC.morula.corrected.top.variable),names(meansAt))],
+#         cv2At[match(rownames(RC.morula.corrected.top.variable),names(meansAt))], pch=20, cex=.2,
+#         col = "black" )
+# 
+# 
+# ###############################
+# 
+# #RC.morula.corrected.top.variable
+# 
+# png(file = "marula,highv gene after correcting for embryo effect, heatmap, including genes >1 count.jpeg",width = 1000,height = 800)
+# heatmap( log2(as.matrix(RC.morula.corrected.top.variable)+1),trace = "none",density = "none",
+#          #Colv = as.dendrogram(complete.cluster),
+#          #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
+#          #ColSideColors =  c("grey","red")[factor(type)],
+#          col=color.palette,
+#          breaks = palette.breaks,
+#          scale = c("row"),
+#          dendrogram = "both")
+# dev.off()
+# 
+# ################################
+# 
+# # 试一试cut tree，不同组细胞表达marker是不是有差别
+# 
+# #plot(hclust(RC.morula.corrected.top.variable))
+# complete.cluster = hclust(as.dist(1-abs(cor(log2(RC.morula.corrected.top.variable+1),method="spearman"))), 
+#                           method="complete")
+# plot(complete.cluster, hang = -1)
+# 
+# #reconcilePropertiesAndPrototype
+# rect.hclust(complete.cluster,2)
+# 
+# 
+# plot.exp = data.frame(exp = RC.morula.corrected.top.variable[which(rownames(RC.morula.corrected.top.variable) 
+#                                                                    == "NANOG"),],
+#                       group = cutree(complete.cluster,2))
+# 
+# ggplot(plot.exp, aes(x = factor(group), y = log2(exp+1) )) +
+#   geom_boxplot() + geom_jitter()
+# 
+# 
+# ###############
+# 
+# # 看整体的gene，在三组中如何分布
+# 
+# plot.exp = data.frame(exp = RC.morula.corrected.top.variable[which(rownames(RC.morula.corrected.top.variable) 
+#                                                                    == "CCNE2"),],
+#                       group = cutree(complete.cluster,3))
+# 
+# 
+# plot.exp = data.frame(exp = RC.morula.corrected[which(rownames(RC.morula.corrected) 
+#                                                                    == "POU5F1"),],
+#                       group = cutree(complete.cluster,2))
+# 
+# ggplot(plot.exp, aes(x = factor(group), y = log2(exp+1) )) +
+#   geom_boxplot() + geom_jitter()
+# 
+# #############
+# 
+# 
+# #library(reshape2)
+# #melt(x, id.vars=c('id', 'time'),var='color')
+# 
+# RC.morula.corrected.TE = RC.morula.corrected[match(sig.gene.after.correction,
+#                                                    rownames(RC.morula.corrected)),]
+# 
+# #RC.morula.corrected.TE = RC.morula.corrected.top.variable
+# 
+# RC.morula.corrected.TE = t( scale(t(RC.morula.corrected.TE))  )
+# 
+# dat2a <- data.frame(stack(RC.morula.corrected.TE))
+# colnames(dat2a) = c("gene","sample","sample.2","exp")
+# 
+# dat2a$cluster = rep(cutree(complete.cluster,3),each = dim(RC.morula.corrected.TE)[1])
+# 
+# ggplot(dat2a, aes(x = factor(cluster), y = log2(exp+1) )) +
+#   geom_boxplot()# + geom_jitter()
+# 
+# 
+# ##
+# 
+# 
+# RC.morula.corrected.TE = RC.morula.corrected[match(PE.1000$V1,rownames(RC.morula.corrected)),]
+# 
+# dat2a <- data.frame(stack(RC.morula.corrected.TE))
+# colnames(dat2a) = c("gene","sample","sample.2","exp")
+# 
+# dat2a$cluster = rep(cutree(complete.cluster,3),each = dim(RC.morula.corrected.TE)[1])
+# 
+# ggplot(dat2a, aes(x = factor(cluster), y = log2(exp+1) )) +
+#   geom_boxplot()# + geom_jitter()
+# 
 
-meansAt <- rowMeans( RC.morula.corrected )
-varsAt <- rowVars( RC.morula.corrected )
+
+###############################################################
+
+# 做quantile normalization
+
+
+RC.morula.corrected.quan.norm = 
+  normalize.quantiles.robust(  (as.matrix(RC.morula.corrected))   ,use.median=TRUE,use.log2=FALSE)
+
+rownames(RC.morula.corrected.quan.norm) = rownames(RC.morula.corrected)
+
+colnames(RC.morula.corrected.quan.norm) = colnames(RC.morula.corrected)
+
+######
+# test for hihgly variable gene， 用之前记得rerun
+
+meansAt <- rowMeans( RC.morula.corrected.quan.norm )
+varsAt <- rowVars( RC.morula.corrected.quan.norm )
 cv2At <- varsAt / meansAt^2
 
 sfAt = 
@@ -249,7 +472,7 @@ psia1theta <- mean( 1 / sfAt ) + a1 * mean( sfHeLa / sfAt )
 
 minBiolDisp <- .5^2
 
-m <- ncol(RC.morula.corrected)
+m <- ncol(RC.morula.corrected.quan.norm)
 cv2th <- a0 + minBiolDisp + a0 * minBiolDisp
 testDenom <- ( meansAt * psia1theta + meansAt^2 * cv2th ) / ( 1 + cv2th/m )
 p <- 1 - pchisq( varsAt * (m-1) / testDenom, m-1 )
@@ -279,38 +502,34 @@ lines( xg, psia1theta/xg + a0 + minBiolDisp, lty="dashed", col="#C0007090", lwd=
 abline(v = 1)
 
 sig.gene.after.correction = names(sig)[sig]
-write.table(sig.gene.after.correction,file = "morula.high.variable.AFTERCorrectEmbryoEffect.txt",quote = F,row.names = F)      
+write.table(sig.gene.after.correction,file = "morula.high.variable.AFTERCorrectEmbryoEffect.quantile normalized.txt",quote = F,row.names = F)      
 
+##################################
 
-intersect(sig.gene.after.correction,Blakeley.tb3$Gene)
+#morula.gene.distance = cv2At - meansAt
 
-intersect(sig.gene.after.correction,sig.big.gene)
+#morula.gene.distance.big = morula.gene.distance
 
-###########
+#morula.gene.distance.order = morula.gene.distance.big[order(morula.gene.distance.big,decreasing = T)]
 
-morula.gene.distance = cv2At - meansAt
+#match(names(morula.gene.distance.order[1:1000]),names(meansAt))
 
-morula.gene.distance.big = morula.gene.distance[meansAt>10]
-
-morula.gene.distance.order = morula.gene.distance.big[order(morula.gene.distance.big,decreasing = T)]
-
-match(names(morula.gene.distance.order[1:1000]),names(meansAt))
-
-points( meansAt[match(names(morula.gene.distance.order[1:1000]),names(meansAt))], cv2At[match(names(morula.gene.distance.order[1:1000]),names(meansAt))], pch=20, cex=.2,
-        col = "black" )
+#points( meansAt[match(names(morula.gene.distance.order[1:1000]),names(meansAt))], cv2At[match(names(morula.gene.distance.order[1:1000]),names(meansAt))], pch=20, cex=.2,
+#        col = "black" )
 
 #morula.gene.distance.order[1:20]
 
 padj.order = padj[order(padj,decreasing = F)]
 
-RC.morula.corrected.top.variable = RC.morula.corrected[match(names(padj.order)[1:1000],rownames(RC.morula.corrected)),]
+RC.morula.corrected.top.variable = RC.morula.corrected.quan.norm[match(names(padj.order)[1:1000],
+                                                                       rownames(RC.morula.corrected.quan.norm)),]
 
-RC.morula.corrected.big = RC.morula.corrected.top.variable[rowMeans(RC.morula.corrected.top.variable) > 10,]
+#RC.morula.corrected.big = RC.morula.corrected.top.variable[rowMeans(RC.morula.corrected.top.variable) > 10,]
 
 
 
-intersect(rownames(RC.morula.corrected.big),Blakeley.tb3$Gene)
-intersect(rownames(RC.morula.corrected.big),TE.1000$V1)
+intersect(rownames(RC.morula.corrected.top.variable),Blakeley.tb3$Gene)
+intersect(rownames(RC.morula.corrected.top.variable),TE.1000$V1)
 
 palette.breaks <- seq(-2, 2, 0.1)
 color.palette = colorRampPalette(c("dodgerblue4","dodgerblue1","white","firebrick1","firebrick3"), 
@@ -318,47 +537,6 @@ color.palette = colorRampPalette(c("dodgerblue4","dodgerblue1","white","firebric
 
 
 png(file = "marula,highv gene after correcting for embryo effect, heatmap.jpeg",width = 1000,height = 800)
-heatmap( log2(as.matrix(RC.morula.corrected.big)+1),trace = "none",density = "none",
-         #Colv = as.dendrogram(complete.cluster),
-         #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
-         #ColSideColors =  c("grey","red")[factor(type)],
-         col=color.palette,
-         breaks = palette.breaks,
-         scale = c("row"),
-         dendrogram = "both")
-dev.off()
-
-############################
-
-
-plot( NULL, xaxt="n", yaxt="n",
-      log="xy", xlim = c( 1e-1, 3e5 ), ylim = c( .005, 100 ),
-      xlab = "average normalized read count", ylab = "squared coefficient of variation (CV^2)")
-axis( 1, 10^(-1:5), c( "0.1", "1", "10", "100", "1000",
-                       expression(10^4), expression(10^5) ) )
-axis( 2, 10^(-2:2), c( "0.01", "0.1", "1", "10","100" ), las=2 )
-abline( h=10^(-2:1), v=10^(-1:5), col="#D0D0D0", lwd=2 )
-# Plot the plant genes, use a different color if they are highly variable
-points( meansAt, cv2At, pch=20, cex=.2,
-        col = ifelse( padj < .1, "#C0007090", colAt ) )
-# Add the technical noise fit, as before
-xg <- 10^seq( -2, 6, length.out=1000 )
-lines( xg, (xi+a1)/xg + a0, col="#FF000080", lwd=3 )
-# Add a curve showing the expectation for the chosen biological CV^2 thershold
-lines( xg, psia1theta/xg + a0 + minBiolDisp, lty="dashed", col="#C0007090", lwd=3 )
-
-abline(v = 1)
-
-points( meansAt[match(rownames(RC.morula.corrected.top.variable),names(meansAt))],
-        cv2At[match(rownames(RC.morula.corrected.top.variable),names(meansAt))], pch=20, cex=.2,
-        col = "black" )
-
-
-###############################
-
-#RC.morula.corrected.top.variable
-
-png(file = "marula,highv gene after correcting for embryo effect, heatmap, including genes >1 count.jpeg",width = 1000,height = 800)
 heatmap( log2(as.matrix(RC.morula.corrected.top.variable)+1),trace = "none",density = "none",
          #Colv = as.dendrogram(complete.cluster),
          #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
@@ -369,80 +547,138 @@ heatmap( log2(as.matrix(RC.morula.corrected.top.variable)+1),trace = "none",dens
          dendrogram = "both")
 dev.off()
 
-################################
 
-# 试一试cut tree，不同组细胞表达marker是不是有差别
+###############
 
-#plot(hclust(RC.morula.corrected.top.variable))
+
 complete.cluster = hclust(as.dist(1-abs(cor(log2(RC.morula.corrected.top.variable+1),method="spearman"))), 
                           method="complete")
 plot(complete.cluster, hang = -1)
 
 #reconcilePropertiesAndPrototype
-rect.hclust(complete.cluster,3)
+rect.hclust(complete.cluster,4)
 
 
-plot.exp = data.frame(exp = RC.morula.corrected.top.variable[which(rownames(RC.morula.corrected.top.variable) 
-                                                                   == "IFITM1"),],
-                      group = cutree(complete.cluster,3))
 
-ggplot(plot.exp, aes(x = factor(group), y = log2(exp+1) )) +
-  geom_boxplot() + geom_jitter()
-
-
-###############
-
-# 看整体的gene，在三组中如何分布
-
-plot.exp = data.frame(exp = RC.morula.corrected.top.variable[which(rownames(RC.morula.corrected.top.variable) 
-                                                                   == "CCNE2"),],
-                      group = cutree(complete.cluster,3))
-
-
-plot.exp = data.frame(exp = RC.morula.corrected[which(rownames(RC.morula.corrected) 
-                                                                   == "POU5F1"),],
-                      group = cutree(complete.cluster,3))
+plot.exp = data.frame(exp = RC.morula.corrected.quan.norm[which(rownames(RC.morula.corrected.quan.norm) 
+                                                                   == "FHL2"),],
+                      group = cutree(complete.cluster,4))
 
 ggplot(plot.exp, aes(x = factor(group), y = log2(exp+1) )) +
   geom_boxplot() + geom_jitter()
 
-#############
+# 看不同cluster 表达差异
+
+##########################
 
 
-#library(reshape2)
-#melt(x, id.vars=c('id', 'time'),var='color')
 
-RC.morula.corrected.TE = RC.morula.corrected[match(sig.gene.after.correction,
-                                                   rownames(RC.morula.corrected)),]
 
-#RC.morula.corrected.TE = RC.morula.corrected.top.variable
 
-RC.morula.corrected.TE = t( scale(t(RC.morula.corrected.TE))  )
+####
+RC.morula.corrected.quan.norm.TE = 
+  RC.morula.corrected.quan.norm[match(M.marker.com$gene[M.marker.com$lineage=="TE"],
+                                      rownames(RC.morula.corrected.quan.norm)),]
 
-dat2a <- data.frame(stack(RC.morula.corrected.TE))
-colnames(dat2a) = c("gene","sample","sample.2","exp")
+#RC.morula.corrected.quan.norm.TE = t(scale(  t(RC.morula.corrected.quan.norm.TE)  ))
 
-dat2a$cluster = rep(cutree(complete.cluster,3),each = dim(RC.morula.corrected.TE)[1])
+group = cutree(complete.cluster,4)
+boxplot.matrix(t(apply(RC.morula.corrected.quan.norm.TE,1, function(x){as.numeric(by(log2(x+1), group, mean))})))
 
-ggplot(dat2a, aes(x = factor(cluster), y = log2(exp+1) )) +
-  geom_boxplot()# + geom_jitter()
+###
 
+RC.morula.corrected.quan.norm.EPI = 
+  RC.morula.corrected.quan.norm[match(M.marker.com$gene[M.marker.com$lineage=="EPI"],
+                                      rownames(RC.morula.corrected.quan.norm)),]
+
+
+group = cutree(complete.cluster,4)
+boxplot.matrix(t(apply(RC.morula.corrected.quan.norm.EPI,1, function(x){as.numeric(by(log2(x+1), group, mean))})))
+
+
+###
+RC.morula.corrected.quan.norm.head = 
+  RC.morula.corrected.quan.norm[c(600:12000),]
+group = cutree(complete.cluster,4)
+boxplot.matrix(t(apply(RC.morula.corrected.quan.norm.head,1, function(x){as.numeric(by(log2(x+1), group, mean))})))
 
 ##
 
-
-RC.morula.corrected.TE = RC.morula.corrected[match(PE.1000$V1,rownames(RC.morula.corrected)),]
-
-dat2a <- data.frame(stack(RC.morula.corrected.TE))
-colnames(dat2a) = c("gene","sample","sample.2","exp")
-
-dat2a$cluster = rep(cutree(complete.cluster,3),each = dim(RC.morula.corrected.TE)[1])
-
-ggplot(dat2a, aes(x = factor(cluster), y = log2(exp+1) )) +
-  geom_boxplot()# + geom_jitter()
+RC.morula.corrected.quan.norm.head.TE = 
+  RC.morula.corrected.quan.norm[match(EPI.1000$V1[1:300],
+                                      rownames(RC.morula.corrected.quan.norm)),]
+group = cutree(complete.cluster,4)
+boxplot.matrix(t(apply(RC.morula.corrected.quan.norm.head.TE,1, function(x){as.numeric(by(log2(x+1), group, mean))})))
 
 
+# boxplot.matrix(  log2(RC.morula.corrected.top.variable[,complete.cluster$order] +1 ))
+# 
+# a =as.numeric(by(log2(plot.exp$exp+1), plot.exp$group, mean))
+
+
+#mean(log2(plot.exp$exp+1)[plot.exp$group == 2])
+
+
+
+# rank normalization 
+
+RC.morula.corrected.Rank.norm =  apply(RC.morula.corrected, 2, function(y) rank(y) / length(y))
+
+
+#Fuchoutang.TE
+
+RC.morula.corrected.Rank.norm.TE = 
+  RC.morula.corrected.Rank.norm[ match(Fuchoutang.EPI$V1[153:300],rownames(RC.morula.corrected.Rank.norm)),]
+group = cutree(complete.cluster,4)
+boxplot.matrix(t(apply(RC.morula.corrected.Rank.norm.TE,1, function(x){as.numeric(by((x), group, mean))})))
 
 
 
 
+
+
+
+
+
+
+###########################
+
+# 用maintained marker 画图
+
+RC.morula.corrected.quan.norm.maintained.marker = 
+  RC.morula.corrected.quan.norm[na.omit(match(Maintained.lineage.markers$V1,rownames(RC.morula.corrected.quan.norm))),]
+
+
+heatmap( log2(as.matrix(RC.morula.corrected.quan.norm.maintained.marker)+1),trace = "none",density = "none",
+         #Colv = as.dendrogram(complete.cluster),
+         #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
+         #ColSideColors =  c("grey","red")[factor(type)],
+         col=color.palette,
+         breaks = palette.breaks,
+         scale = c("row"),
+         dendrogram = "both")
+
+
+RC.morula.corrected.maintained.marker = 
+  RC.morula.corrected[na.omit(match(Maintained.lineage.markers$V1,rownames(RC.morula.corrected))),]
+heatmap( log2(as.matrix(RC.morula.corrected.maintained.marker)+1),trace = "none",density = "none",
+         #Colv = as.dendrogram(complete.cluster),
+         #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
+         #ColSideColors =  c("grey","red")[factor(type)],
+         col=color.palette,
+         breaks = palette.breaks,
+         scale = c("row"),
+         dendrogram = "both")
+
+
+
+RC.clean.clean.gene.DESeqN.morula.maintained.marker = 
+  RC.clean.clean.gene.DESeqN.morula[na.omit(match(Maintained.lineage.markers$V1,rownames(RC.clean.clean.gene.DESeqN.morula))),]
+heatmap( log2(as.matrix(RC.clean.clean.gene.DESeqN.morula.maintained.marker)+1),trace = "none",density = "none",
+         #Colv = as.dendrogram(complete.cluster),
+         #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
+         #ColSideColors =  c("grey","red")[factor(type)],
+         col=color.palette,
+         breaks = palette.breaks,
+         scale = c("row"),
+         dendrogram = "both")

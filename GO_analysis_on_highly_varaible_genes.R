@@ -22,6 +22,19 @@ Maintained.lineage.markers = read.table("cell.matintained.3.lineage.markers")
 intersect(as.character(Maintained.lineage.markers$V1),sig.big.gene)
 
 
+M.marker.com = read.table("maintained.markers.complete",header = T)
+#intersect(as.character(Maintained.lineage.markers$V1),sig.big.gene)
+
+
+Fuchoutang.TE = read.table("fuchoutang_TE")
+
+Fuchoutang.EPI = read.table("fuchoutang.EPI")
+
+
+
+
+
+
 TEAD4.target = read.table("TEAD4_target.gene.txt")
 TEAD4.target$V1 = toupper(TEAD4.target$V1)
 
