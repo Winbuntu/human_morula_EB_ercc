@@ -46,6 +46,14 @@ ggplot(GetPCA.Norm.data.noquantile.norm(RC.clean.clean.gene.DESeqN.EB)[[1]],
   geom_point(size=3) + theme_base() 
 
 
+#################################
+
+# look for highly variable gene
+
+
+
+
+
 
 
 
