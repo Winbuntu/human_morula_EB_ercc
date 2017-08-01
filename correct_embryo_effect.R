@@ -8,10 +8,23 @@ library(lme4)
 
 morula.embryo.info = factor(QC.clean.clean$embryo.number[QC.clean.clean$Stage=="M"])
 
+# fit.one.gene <- function(x){
+#   b = lmer( x - mean(x) ~  0 + (1|factor(morula.embryo.info) ) )
+#   return(x - fitted(b))
+# }
+
 fit.one.gene <- function(x){
-  b = lmer( x - mean(x) ~  0 + (1|factor(morula.embryo.info) ) )
+  #x = RC.clean.clean.gene.DESeqN.morula.big.log[2,]
+  b = lmer( x - mean(x) ~ (1|factor(morula.embryo.info) ) )
+  #fitted(b)
   return(x - fitted(b))
 }
+
+
+
+
+
+
 
 RC.clean.clean.gene.DESeqN.morula.big.log = log2(RC.clean.clean.gene.DESeqN.morula.big+1)
 
