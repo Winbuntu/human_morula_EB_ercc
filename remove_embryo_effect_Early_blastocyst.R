@@ -86,6 +86,64 @@ heatmap( log2(as.matrix(RC.clean.clean.gene.DESeqN.EB.big.NOT.log.removed.Embryo
 #################################
 
 # look for highly variable gene
+# 用之前记得从新运行，覆盖掉旧数据
+
+RC.clean.clean.ERCC.DESeqN.EB = 
+  RC.clean.clean.ERCC.DESeqN[,match(colnames(RC.clean.clean.gene.DESeqN.EB),
+                                    colnames(RC.clean.clean.ERCC.DESeqN))]
+
+meansHeLa <- rowMeans( RC.clean.clean.ERCC.DESeqN.EB )
+varsHeLa <- rowVars( RC.clean.clean.ERCC.DESeqN.EB )
+cv2HeLa <- varsHeLa / meansHeLa^2
+
+
+minMeanForFit <- unname( quantile( meansHeLa[ which( cv2HeLa > .3 ) ], .95 ) )
+minMeanForFit
+
+useForFit <- (meansHeLa >= minMeanForFit)
+
+fit <- glmgam.fit( cbind( a0 = 1, a1tilde = 1/meansHeLa[useForFit] ),
+                   cv2HeLa[useForFit] )
+fit$coefficients
+
+### 这里有错
+sfHeLa = 
+  colData(dds.ERCC)$sizeFactor[
+    match(colnames(RC.clean.clean.gene.DESeqN.EB),names(colData(dds.ERCC)$sizeFactor))]
+
+xi <- mean( 1 / sfHeLa )
+
+
+a0 <- unname( fit$coefficients["a0"] )
+a1 <- unname( fit$coefficients["a1tilde"] - xi )
+
+
+c( a0, a1 )
+
+####
+
+plot( NULL, xaxt="n", yaxt="n",
+      log="xy", xlim = c( 1e-1, 3e5 ), ylim = c( .0005, 100 ),
+      xlab = "average normalized read count", ylab = "squared coefficient of variation (CV^2)")
+axis( 1, 10^(-1:5), c( "0.1", "1", "10", "100", "1000",
+                       expression(10^4), expression(10^5) ) )
+axis( 2, 10^(-3:2), c("0.001", "0.01", "0.1", "1", "10","100" ), las=2 )
+abline( h=10^(-2:1), v=10^(-1:5), col="#D0D0D0", lwd=2 )
+# Add the data points
+points( meansHeLa, cv2HeLa, pch=20, cex=1, col="blue" )
+# Plot the fitted curve
+xg <- 10^seq( -2, 6, length.out=1000 )
+lines( xg, (xi+a1)/xg + a0, col="#FF000080", lwd=3 )
+# Plot quantile lines around the fit
+
+
+######
+df <- ncol(RC.clean.clean.gene.DESeqN.morula) - 1  # 
+lines( xg, ( (xi+a1)/xg + a0  ) * qchisq( .975, df ) / df,
+       col="#FF000080", lwd=2, lty="dashed" )
+lines( xg, ( (xi+a1)/xg + a0  ) * qchisq( .025, df ) / df,
+       col="#FF000080", lwd=2, lty="dashed" )
+
 
 
 

@@ -51,46 +51,46 @@ phyper(length(intersect(as.character(PE.1000$V1),sig.big.gene)),
 #dim(RC.clean.clean.gene.DESeqN.morula.big)[1]
 # (success-in-sample, success-in-bkgd, failure-in-bkgd, sample-size).
 
-
-############################################
-
-# 画GO 气泡图
-
-library(clusterProfiler)
-library(org.Hs.eg.db)
-
-eg.morulaHigh.downreg.gene.DEseq = 
-  bitr(morulaHigh.downreg.gene.DEseq, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
-
-ggo.morulaHigh.downreg.gene.DEseq <- groupGO(gene     = eg.morulaHigh.downreg.gene.DEseq$ENTREZID,
-               OrgDb    = org.Hs.eg.db,
-               ont      = "CC",
-               level    = 3,
-               readable = TRUE)
-
-head(ggo.morulaHigh.downreg.gene.DEseq)
-
-ego.morulaHigh.downreg.gene.DEseq <- enrichGO(gene  = eg.morulaHigh.downreg.gene.DEseq$ENTREZID,
-                #universe      = names(geneList),
-                OrgDb         = org.Hs.eg.db,
-                ont           = "CC",
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 0.01,
-                qvalueCutoff  = 0.05,
-                readable      = TRUE)
-head(ego.morulaHigh.downreg.gene.DEseq)
-
-dotplot(ego.morulaHigh.downreg.gene.DEseq)
-
-ego2 <- enrichGO(gene         = eg.morulaHigh.downreg.gene.DEseq$ENTREZID,
-                 OrgDb         = org.Hs.eg.db,
-                 #keytype       = 'ENSEMBL',
-                 ont           = "BP",
-                 pAdjustMethod = "BH",
-                 pvalueCutoff  = 0.05
-                 #qvalueCutoff  = 0.05
-                 )
-dotplot(ego2)
+# 
+# ############################################
+# 
+# # 画GO 气泡图
+# 
+# library(clusterProfiler)
+# library(org.Hs.eg.db)
+# 
+# eg.morulaHigh.downreg.gene.DEseq = 
+#   bitr(morulaHigh.downreg.gene.DEseq, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+# 
+# ggo.morulaHigh.downreg.gene.DEseq <- groupGO(gene     = eg.morulaHigh.downreg.gene.DEseq$ENTREZID,
+#                OrgDb    = org.Hs.eg.db,
+#                ont      = "CC",
+#                level    = 3,
+#                readable = TRUE)
+# 
+# head(ggo.morulaHigh.downreg.gene.DEseq)
+# 
+# ego.morulaHigh.downreg.gene.DEseq <- enrichGO(gene  = eg.morulaHigh.downreg.gene.DEseq$ENTREZID,
+#                 #universe      = names(geneList),
+#                 OrgDb         = org.Hs.eg.db,
+#                 ont           = "CC",
+#                 pAdjustMethod = "BH",
+#                 pvalueCutoff  = 0.01,
+#                 qvalueCutoff  = 0.05,
+#                 readable      = TRUE)
+# head(ego.morulaHigh.downreg.gene.DEseq)
+# 
+# dotplot(ego.morulaHigh.downreg.gene.DEseq)
+# 
+# ego2 <- enrichGO(gene         = eg.morulaHigh.downreg.gene.DEseq$ENTREZID,
+#                  OrgDb         = org.Hs.eg.db,
+#                  #keytype       = 'ENSEMBL',
+#                  ont           = "BP",
+#                  pAdjustMethod = "BH",
+#                  pvalueCutoff  = 0.05
+#                  #qvalueCutoff  = 0.05
+#                  )
+# dotplot(ego2)
 
 #####################
 

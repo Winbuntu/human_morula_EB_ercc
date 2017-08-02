@@ -21,21 +21,21 @@ RC.morula.corrected.quan.norm.RPKM =
 ####看分类？
 
 RC.morula.corrected.quan.norm.RPKM.TE = 
-  RC.morula.corrected.quan.norm.RPKM[ match(Fuchoutang.TE$V1,rownames(RC.morula.corrected.quan.norm.RPKM)),]
+  RC.morula.corrected.quan.norm.RPKM[ match(Fuchoutang.EPI$V1,rownames(RC.morula.corrected.quan.norm.RPKM)),]
 group = cutree(complete.cluster,4)
 res = t(apply(RC.morula.corrected.quan.norm.RPKM.TE,1, function(x){as.numeric(by((x), group, mean))}))[,1:3]
 boxplot.matrix( log2(res+1) )
 
-wilcox.test(log2(res+1)[,1],log2(res+1)[,3])
+wilcox.test(log2(res+1)[,3],log2(res+1)[,2])
 
-t.test(log2(res+1)[,2],log2(res+1)[,1])
+t.test(log2(res+1)[,3],log2(res+1)[,1])
 
 
 ######################
 
 
 RC.morula.corrected.quan.norm.RPKM.TE = 
-  RC.morula.corrected.quan.norm.RPKM[ match(M.marker.com$gene[M.marker.com$lineage=="EPI"],rownames(RC.morula.corrected.quan.norm.RPKM)),]
+  RC.morula.corrected.quan.norm.RPKM[ match(M.marker.com$gene[M.marker.com$lineage=="TE"],rownames(RC.morula.corrected.quan.norm.RPKM)),]
 group = cutree(complete.cluster,4)
 res = t(apply(RC.morula.corrected.quan.norm.RPKM.TE,1, function(x){as.numeric(by((x), group, mean))}))[,1:3]
 boxplot.matrix( log2(res+1) )
@@ -46,6 +46,16 @@ t.test(log2(res+1)[,2],log2(res+1)[,1])
 
 
 
-
-
 ###
+
+# 随机基因
+
+RC.morula.corrected.quan.norm.RPKM.TE = 
+  RC.morula.corrected.quan.norm.RPKM[ 3000:3700,]
+group = cutree(complete.cluster,4)
+res = t(apply(RC.morula.corrected.quan.norm.RPKM.TE,1, function(x){as.numeric(by((x), group, mean))}))[,1:3]
+boxplot.matrix( log2(res+1) )
+
+wilcox.test(log2(res+1)[,2],log2(res+1)[,3])
+
+t.test(log2(res+1)[,2],log2(res+1)[,1])
