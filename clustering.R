@@ -57,6 +57,27 @@ heatmap( log2(as.matrix(Tang.RPKM.lateblast.Blakeley.tb3)+1),trace = "none",dens
          dendrogram = "both")
 
 
+##########################################
+
+# 试试 late blastocyst是不是可以分成三类，用堂复仇的数据,用maintained gene.list
+
+M.marker.com = read.table("maintained.markers.complete",header = T)
+#intersect(as.character(Maintained.lineage.markers$V1),sig.big.gene)
+
+
+Tang.RPKM.lateblast.maintained = 
+  Tang.RPKM.lateblast[   na.omit(match(M.marker.com$gene ,Tang.RPKM$Gene_ID)),]
+
+
+heatmap( log2(as.matrix(Tang.RPKM.lateblast.maintained)+1),trace = "none",density = "none",
+         #Colv = as.dendrogram(complete.cluster),
+         #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
+         #ColSideColors =  c("grey","red")[factor(type)],
+         col=color.palette,
+         breaks = palette.breaks,
+         scale = c("row"),
+         dendrogram = "both")
+
 #######################################
 
 # 用PCA，只画morula，看是不是能大致分成两类

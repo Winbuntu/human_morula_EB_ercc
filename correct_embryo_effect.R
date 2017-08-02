@@ -572,7 +572,18 @@ ggplot(plot.exp, aes(x = factor(group), y = log2(exp+1) )) +
 ##########################
 
 
-
+png(file = "marula,highv gene after correcting for embryo effect, heatmap,my own cluster.jpeg",width = 1000,height = 800)
+heatmap( log2(as.matrix(RC.morula.corrected.top.variable)+1),trace = "none",density = "none",
+         Colv = as.dendrogram(complete.cluster),
+         #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
+         ColSideColors =  rainbow(7)[morula.embryo.info],
+         labRow = NA,
+         labCol = NA,
+         col=color.palette,
+         breaks = palette.breaks,
+         scale = c("row"),
+         dendrogram = "both")
+dev.off()
 
 
 ####
@@ -583,7 +594,7 @@ RC.morula.corrected.quan.norm.TE =
 #RC.morula.corrected.quan.norm.TE = t(scale(  t(RC.morula.corrected.quan.norm.TE)  ))
 
 group = cutree(complete.cluster,4)
-boxplot.matrix(t(apply(RC.morula.corrected.quan.norm.TE,1, function(x){as.numeric(by(log2(x+1), group, mean))})))
+boxplot.matrix(t(apply(RC.morula.corrected.quan.norm.TE,1, function(x){as.numeric(by(log2(x+1), group, mean))}))[,1:3])
 
 ###
 
@@ -624,15 +635,23 @@ boxplot.matrix(t(apply(RC.morula.corrected.quan.norm.head.TE,1, function(x){as.n
 
 RC.morula.corrected.Rank.norm =  apply(RC.morula.corrected, 2, function(y) rank(y) / length(y))
 
+#RC.morula.corrected.Rank.norm.scale = t(scale(t(RC.morula.corrected.Rank.norm)))
 
 #Fuchoutang.TE
 
 RC.morula.corrected.Rank.norm.TE = 
-  RC.morula.corrected.Rank.norm[ match(Fuchoutang.EPI$V1[153:300],rownames(RC.morula.corrected.Rank.norm)),]
+  RC.morula.corrected.Rank.norm[ match(Fuchoutang.TE$V1,rownames(RC.morula.corrected.Rank.norm)),]
 group = cutree(complete.cluster,4)
-boxplot.matrix(t(apply(RC.morula.corrected.Rank.norm.TE,1, function(x){as.numeric(by((x), group, mean))})))
+
+#RC.morula.corrected.Rank.norm.TE = t(scale(t(RC.morula.corrected.Rank.norm.TE)))
+
+res = t(apply(RC.morula.corrected.Rank.norm.TE,1, function(x){as.numeric(by((x), group, mean))}))[,1:3]
 
 
+
+boxplot.matrix( (res) )
+
+wilcox.test(res[,3],res[,2])
 
 
 
@@ -665,10 +684,13 @@ heatmap( log2(as.matrix(RC.morula.corrected.maintained.marker)+1),trace = "none"
          #Colv = as.dendrogram(complete.cluster),
          #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
          #ColSideColors =  c("grey","red")[factor(type)],
+         ColSideColors =  rainbow(7)[morula.embryo.info],
          col=color.palette,
          breaks = palette.breaks,
          scale = c("row"),
-         dendrogram = "both")
+         dendrogram = "both",
+         labRow = NA,
+         labCol = NA)
 
 
 
@@ -677,8 +699,10 @@ RC.clean.clean.gene.DESeqN.morula.maintained.marker =
 heatmap( log2(as.matrix(RC.clean.clean.gene.DESeqN.morula.maintained.marker)+1),trace = "none",density = "none",
          #Colv = as.dendrogram(complete.cluster),
          #ColSideColors = c("grey","red")[ factor(type[complete.cluster$order] ) ] ,
-         #ColSideColors =  c("grey","red")[factor(type)],
+         ColSideColors =  rainbow(7)[morula.embryo.info],
          col=color.palette,
          breaks = palette.breaks,
+         labRow = NA,
+         labCol = NA,
          scale = c("row"),
          dendrogram = "both")

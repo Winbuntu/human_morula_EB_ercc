@@ -50,3 +50,66 @@ phyper(length(intersect(as.character(PE.1000$V1),sig.big.gene)),
        length(as.character(PE.1000$V1)), lower.tail=TRUE);
 #dim(RC.clean.clean.gene.DESeqN.morula.big)[1]
 # (success-in-sample, success-in-bkgd, failure-in-bkgd, sample-size).
+
+
+############################################
+
+# 画GO 气泡图
+
+library(clusterProfiler)
+library(org.Hs.eg.db)
+
+eg.morulaHigh.downreg.gene.DEseq = 
+  bitr(morulaHigh.downreg.gene.DEseq, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+
+ggo.morulaHigh.downreg.gene.DEseq <- groupGO(gene     = eg.morulaHigh.downreg.gene.DEseq$ENTREZID,
+               OrgDb    = org.Hs.eg.db,
+               ont      = "CC",
+               level    = 3,
+               readable = TRUE)
+
+head(ggo.morulaHigh.downreg.gene.DEseq)
+
+ego.morulaHigh.downreg.gene.DEseq <- enrichGO(gene  = eg.morulaHigh.downreg.gene.DEseq$ENTREZID,
+                #universe      = names(geneList),
+                OrgDb         = org.Hs.eg.db,
+                ont           = "CC",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+                readable      = TRUE)
+head(ego.morulaHigh.downreg.gene.DEseq)
+
+dotplot(ego.morulaHigh.downreg.gene.DEseq)
+
+ego2 <- enrichGO(gene         = eg.morulaHigh.downreg.gene.DEseq$ENTREZID,
+                 OrgDb         = org.Hs.eg.db,
+                 #keytype       = 'ENSEMBL',
+                 ont           = "BP",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.05
+                 #qvalueCutoff  = 0.05
+                 )
+dotplot(ego2)
+
+#####################
+
+# 自己画图
+
+library(RColorBrewer)
+
+morulaHigh.downreg.gene.DEseq.GO = read.csv("morulaLow.upreg.gene.ontology.csv")
+
+ggplot(morulaHigh.downreg.gene.DEseq.GO[1:10,],
+       aes(x=GO.biological.process.complete, y=upload_1..fold.Enrichment.,fill = upload_1..P.value. )) +
+  geom_bar(stat="identity")+ theme_bw() + coord_flip() + scale_fill_gradient(low="red", high="blue")+
+  theme(axis.text=element_text(size=16))
+
+#print(p)
+morulaHigh.downreg.gene.DEseq.GO = read.csv("morulaHigh.downreg.gene.DEseq.Geneontology.csv")
+
+ggplot(morulaHigh.downreg.gene.DEseq.GO[1:10,],
+       aes(x=GO.biological.process.complete, y=upload_1..fold.Enrichment.,fill = upload_1..P.value. )) +
+  geom_bar(stat="identity")+ theme_bw() + coord_flip() + scale_fill_gradient(low="red", high="blue")+
+  theme(axis.text=element_text(size=16))
+
